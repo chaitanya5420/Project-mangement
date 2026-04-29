@@ -36,15 +36,15 @@
         "recharts": "^3.3.0",
         "socket.io": "^4.8.1",
         "socket.io-client": "^4.8.1",
+        "tailwindcss": "^4",
+        "@tailwindcss/postcss": "^4",
         "tailwind-merge": "^3.3.1",
         "zustand": "^5.0.8"
     },
     "devDependencies": {
-        "@tailwindcss/postcss": "^4",
         "concurrently": "^9.2.1",
         "eslint": "^9",
         "eslint-config-next": "16.2.4",
-        "nodemon": "^3.1.10",
-        "tailwindcss": "^4"
+        "nodemon": "^3.1.10"
     }
 }
