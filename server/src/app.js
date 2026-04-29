@@ -24,6 +24,10 @@ app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
+app.get("/", (req, res) => {
+    res.send("Welcome to the Task Management API");
+});
+
 app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "ok" });
 });
