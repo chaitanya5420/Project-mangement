@@ -13,9 +13,19 @@ const { errorMiddleware } = require("./middleware/errorMiddleware");
 
 const app = express();
 
+const normalizeOrigin = (value) => value?.replace(/\/$/, "");
+const clientOrigin =
+    normalizeOrigin(process.env.CLIENT_URL) || "http://localhost:3000";
+
 app.use(
     cors({
-        origin: process.env.CLIENT_URL || "http://localhost:3000",
+        origin: (origin, callback) => {
+            if (!origin || normalizeOrigin(origin) === clientOrigin) {
+                return callback(null, true);
+            }
+
+            return callback(new Error("Not allowed by CORS"));
+        },
         credentials: true,
     }),
 );
