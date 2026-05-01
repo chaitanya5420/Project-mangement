@@ -19,8 +19,8 @@ export default function ProjectCard({ project }) {
                             {project.name}
                         </CardTitle>
                     </div>
-                    <div className="rounded-2xl bg-slate-900 px-3 py-2 text-right text-white dark:bg-white dark:text-slate-900">
-                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/60 dark:text-slate-500">
+                    <div className="rounded-2xl bg-slate-50 px-3 py-2 text-right text-slate-900 dark:bg-slate-950 dark:text-white">
+                        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                             Members
                         </p>
                         <p className="text-lg font-semibold leading-none">

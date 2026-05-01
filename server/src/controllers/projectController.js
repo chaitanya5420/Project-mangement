@@ -38,10 +38,9 @@ const createProject = asyncHandler(async (req, res) => {
 });
 
 const getProject = asyncHandler(async (req, res) => {
-    const project = await Project.findById(req.params.projectId).populate(
-        "members.user",
-        "name email",
-    );
+    const project = await Project.findById(req.params.projectId)
+        .populate("members.user", "name email")
+        .populate("owner", "name email");
     if (!project) {
         throw new ApiError(404, "Project not found");
     }

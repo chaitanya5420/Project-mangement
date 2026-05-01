@@ -46,8 +46,8 @@ export default function DashboardPage() {
                                 </div>
 
                                 <div className="grid gap-3 border-t border-slate-200 p-6 md:grid-cols-3 lg:grid-cols-1 lg:border-l lg:border-t-0 dark:border-slate-800">
-                                    <div className="rounded-2xl bg-slate-900 p-4 text-white dark:bg-white dark:text-slate-900">
-                                        <p className="text-[10px] uppercase tracking-[0.2em] text-white/55 dark:text-slate-500">
+                                    <div className="rounded-2xl bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-white">
+                                        <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                                             Projects
                                         </p>
                                         <p className="mt-2 text-3xl font-semibold tracking-tight">

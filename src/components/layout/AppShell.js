@@ -75,7 +75,7 @@ export default function AppShell({ children }) {
                                 className={cn(
                                     "block rounded-xl px-3 py-2 text-sm font-medium transition",
                                     pathname.startsWith(item.href)
-                                        ? "bg-slate-900 text-white shadow-sm dark:bg-white dark:text-slate-900"
+                                        ? "bg-slate-100 text-slate-900 shadow-sm dark:bg-white dark:text-slate-900"
                                         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50",
                                 )}
                             >
@@ -136,7 +136,7 @@ export default function AppShell({ children }) {
                                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-50">
                                     {user?.name}
                                 </p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
+                                <p className="text-xs text-slate-600 dark:text-slate-400">
                                     {user?.email}
                                 </p>
                             </div>

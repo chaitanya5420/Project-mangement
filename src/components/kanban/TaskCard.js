@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -107,6 +107,18 @@ export default function TaskCard({
         checklistItems.length > 0
             ? completedChecklistCount === checklistItems.length
             : Boolean(task.checkbox);
+
+    // Auto-delete task when all checklist items are completed
+    useEffect(() => {
+        if (isTaskComplete && typeof onDelete === "function") {
+            // Small delay to allow user to see the completion
+            const timeoutId = setTimeout(() => {
+                onDelete(task);
+            }, 1000);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [isTaskComplete, onDelete, task]);
+
     const deadlineState = formatDaysRemaining(task.dueDate, task.status);
 
     const updateDraftItem = (itemId, updates) => {

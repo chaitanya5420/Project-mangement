@@ -78,9 +78,9 @@ export default function DashboardCharts({
                 className="panel animate-fade-up rounded-2xl p-5"
                 style={{ animationDelay: "40ms" }}
             >
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-center justify-between text-slate-900 dark:text-slate-500  ">
                     <CardTitle>Tasks by status</CardTitle>
-                    <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    <span className="text-xs font-medium uppercase tracking-wide text-slate-900 dark:text-slate-500">
                         board distribution
                     </span>
                 </div>

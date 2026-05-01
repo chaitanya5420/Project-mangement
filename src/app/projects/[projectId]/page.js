@@ -62,9 +62,30 @@ export default function ProjectPage() {
     const project = projectData?.project;
     const currentMemberRole = project?.members?.find(
         (member) =>
-            String(member.user?._id || member.user) === String(user?._id),
+            String(member.user?._id || member.user) === String(user?._id || user?.id),
     )?.role;
     const canDeleteTasks = currentMemberRole === "admin";
+
+    const canDeleteTask = (task) => {
+        // If no user or no project data, can't delete
+        if (!user || !project) return false;
+
+        const userId = String(user._id || user.id);
+
+        // Check if user is admin in project members
+        const isAdmin = project.members?.some(
+            (member) => String(member.user?._id || member.user) === userId && member.role === "admin"
+        );
+        if (isAdmin) return true;
+
+        // Project owner can delete any task
+        if (String(project.owner?._id || project.owner) === userId) return true;
+
+        // Task creator can delete their own tasks
+        if (String(task.createdBy?._id || task.createdBy) === userId) return true;
+
+        return false;
+    };
 
     return (
         <AuthGuard>
@@ -101,7 +122,7 @@ export default function ProjectPage() {
                             }
                             tasks={tasksData?.tasks || []}
                             projectId={projectId}
-                            canDeleteTasks={canDeleteTasks}
+                            canDeleteTask={canDeleteTask}
                         />
 
                         <TaskFormModal

@@ -25,7 +25,7 @@ import TaskCard from "@/components/kanban/TaskCard";
 
 function SortableTask({
     task,
-    canDelete,
+    canDeleteTask,
     onDelete,
     onToggleCheckbox,
     onUpdateChecklist,
@@ -52,7 +52,7 @@ function SortableTask({
                 listeners={listeners}
                 attributes={attributes}
                 isDragging={isDragging}
-                canDelete={canDelete}
+                canDelete={canDeleteTask(task)}
                 onDelete={onDelete}
                 onToggleChecklistItem={onToggleCheckbox}
                 onUpdateChecklist={onUpdateChecklist}
@@ -65,7 +65,7 @@ function KanbanColumn({
     id,
     label,
     tasks,
-    canDelete,
+    canDeleteTask,
     onDelete,
     onToggleCheckbox,
     onUpdateChecklist,
@@ -91,7 +91,7 @@ function KanbanColumn({
                         <SortableTask
                             key={task._id}
                             task={task}
-                            canDelete={canDelete && task.status === "done"}
+                            canDeleteTask={canDeleteTask}
                             onDelete={onDelete}
                             onToggleCheckbox={onToggleCheckbox}
                             onUpdateChecklist={onUpdateChecklist}
@@ -124,7 +124,7 @@ function buildTaskMap(items) {
 export default function KanbanBoard({
     tasks,
     projectId,
-    canDeleteTasks = false,
+    canDeleteTask = () => false,
 }) {
     const queryClient = useQueryClient();
     const sensors = useSensors(
@@ -247,12 +247,12 @@ export default function KanbanBoard({
     };
 
     const handleDelete = (task) => {
-        if (!canDeleteTasks || task.status !== "done") {
+        if (!canDeleteTask(task)) {
             return;
         }
 
         const confirmed = window.confirm(
-            `Delete completed task \"${task.title}\"?`,
+            `Delete task "${task.title}"?`,
         );
 
         if (!confirmed) {
@@ -342,7 +342,7 @@ export default function KanbanBoard({
                         id={column.value}
                         label={column.label}
                         tasks={taskGroups[column.value] || []}
-                        canDelete={canDeleteTasks}
+                        canDeleteTask={canDeleteTask}
                         onDelete={handleDelete}
                         onToggleCheckbox={handleToggleChecklistItem}
                         onUpdateChecklist={handleUpdateChecklist}

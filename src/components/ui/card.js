@@ -28,7 +28,7 @@ export function CardDescription({ className, ...props }) {
     return (
         <p
             className={cn(
-                "text-sm text-slate-500 dark:text-slate-400",
+                "text-sm text-slate-600 dark:text-slate-400",
                 className,
             )}
             {...props}

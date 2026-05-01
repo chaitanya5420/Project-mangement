@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 :root {
-    --background: #f5f7fb;
+    --background: #f8fafc;
     --foreground: #0f172a;
 }
 
 .dark {
     --background: #0b1120;
-    --foreground: #e5eefc;
+    --foreground: #e2e8f0;
 }
 
 @theme inline {
@@ -21,12 +21,12 @@ body {
     background:
         radial-gradient(
             circle at 0% 0%,
-            rgba(59, 130, 246, 0.12),
+            rgba(59, 130, 246, 0.08),
             transparent 26%
         ),
         radial-gradient(
             circle at 100% 0%,
-            rgba(14, 165, 233, 0.1),
+            rgba(14, 165, 233, 0.06),
             transparent 24%
         ),
         var(--background);
@@ -52,9 +52,9 @@ body {
 }
 
 .panel {
-    background: rgba(255, 255, 255, 0.82);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgb(226 232 240 / 85%);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgb(226 232 240 / 90%);
     box-shadow: 0 18px 40px rgb(15 23 42 / 6%);
 }
 
