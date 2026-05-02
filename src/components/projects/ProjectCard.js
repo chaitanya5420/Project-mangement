@@ -9,7 +9,7 @@ export default function ProjectCard({ project }) {
 
     return (
         <Link href={`/projects/${project._id}`} className="group block h-full">
-            <Card className="panel flex h-full flex-col rounded-3xl p-5 transition duration-200 group-hover:-translate-y-1 group-hover:shadow-lg">
+            <Card className="flex h-full flex-col rounded-3xl border border-slate-200/50 bg-white/60 p-6 shadow-sm backdrop-blur-md transition-all duration-300 group-hover:-translate-y-1 group-hover:border-indigo-500/30 group-hover:shadow-lg group-hover:shadow-indigo-500/10 dark:border-slate-800/50 dark:bg-slate-900/60 dark:group-hover:border-indigo-500/30">
                 <div className="flex items-start justify-between gap-3">
                     <div className="space-y-2">
                         <span className="inline-flex rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
@@ -19,7 +19,7 @@ export default function ProjectCard({ project }) {
                             {project.name}
                         </CardTitle>
                     </div>
-                    <div className="rounded-2xl bg-slate-50 px-3 py-2 text-right text-slate-900 dark:bg-slate-950 dark:text-white">
+                    <div className="rounded-2xl border border-slate-200/50 bg-white/80 px-4 py-3 text-right text-slate-900 shadow-sm dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-white">
                         <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                             Members
                         </p>

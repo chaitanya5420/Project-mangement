@@ -48,7 +48,7 @@ export default function AppShell({ children }) {
 
                 <aside
                     className={cn(
-                        "panel fixed left-3 top-3 z-30 h-[calc(100vh-1.5rem)] w-[260px] rounded-3xl p-4 transition-transform lg:sticky lg:top-4 lg:translate-x-0",
+                        "fixed left-3 top-3 z-30 flex h-[calc(100vh-1.5rem)] w-[260px] flex-col rounded-3xl border border-slate-200/50 bg-white/60 p-5 shadow-sm backdrop-blur-md transition-transform lg:sticky lg:top-4 lg:translate-x-0 dark:border-slate-800/50 dark:bg-slate-900/60",
                         isSidebarOpen ? "translate-x-0" : "-translate-x-[115%]",
                     )}
                 >
@@ -73,10 +73,10 @@ export default function AppShell({ children }) {
                                 href={item.href}
                                 onClick={() => setIsSidebarOpen(false)}
                                 className={cn(
-                                    "block rounded-xl px-3 py-2 text-sm font-medium transition",
+                                    "block rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200",
                                     pathname.startsWith(item.href)
-                                        ? "bg-slate-100 text-slate-900 shadow-sm dark:bg-white dark:text-slate-900"
-                                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50",
+                                        ? "bg-white/80 text-indigo-900 shadow-sm dark:bg-slate-800/80 dark:text-indigo-100"
+                                        : "text-slate-600 hover:bg-white/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-50",
                                 )}
                             >
                                 {item.label}
@@ -95,11 +95,11 @@ export default function AppShell({ children }) {
                                     href={`/projects/${project._id}`}
                                     onClick={() => setIsSidebarOpen(false)}
                                     className={cn(
-                                        "block rounded-xl px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-50",
-                                        pathname.includes(project._id)
-                                            ? "bg-indigo-50 text-slate-900 dark:bg-indigo-500/15 dark:text-slate-50"
-                                            : "",
-                                    )}
+                                    "block rounded-xl px-3 py-2 text-sm text-slate-600 transition-all duration-200 hover:bg-white/50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-50",
+                                    pathname.includes(project._id)
+                                        ? "bg-white/80 text-indigo-900 shadow-sm dark:bg-slate-800/80 dark:text-indigo-100"
+                                        : "",
+                                )}
                                 >
                                     <span className="line-clamp-1">
                                         {project.name}
@@ -116,7 +116,7 @@ export default function AppShell({ children }) {
                 </aside>
 
                 <div className="flex min-h-screen flex-col lg:min-h-0">
-                    <header className="panel sticky top-0 z-10 mx-3 mt-3 flex h-16 items-center justify-between rounded-3xl px-4 lg:mx-0 lg:mt-0">
+                    <header className="sticky top-0 z-10 mx-3 mt-3 flex h-16 items-center justify-between rounded-3xl border border-slate-200/50 bg-white/60 px-5 shadow-sm backdrop-blur-md lg:mx-0 lg:mt-0 dark:border-slate-800/50 dark:bg-slate-900/60">
                         <div className="flex items-center gap-2">
                             <Button
                                 variant="ghost"

@@ -11,10 +11,25 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
+    AreaChart,
+    Area,
 } from "recharts";
 import { Card, CardTitle } from "@/components/ui/card";
 
-const COLORS = ["#0f172a", "#2563eb", "#16a34a", "#d97706", "#dc2626"];
+const STATUS_COLORS = {
+    todo: "#6366f1",
+    "in progress": "#3b82f6",
+    done: "#10b981",
+    archived: "#94a3b8",
+};
+
+const PRIORITY_COLORS = {
+    low: "#06b6d4",
+    medium: "#f59e0b",
+    high: "#ef4444",
+};
+
+const PIE_COLORS = ["#6366f1", "#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
 
 function normalizeList(data, key) {
     return (data || []).map((item) => ({
@@ -63,6 +78,50 @@ function buildDeadlineSeries(tasks) {
     );
 }
 
+function CustomTooltip({ active, payload, label }) {
+    if (!active || !payload?.length) return null;
+
+    return (
+        <div className="rounded-2xl border border-white/20 bg-slate-900/95 px-4 py-3 shadow-2xl backdrop-blur-md">
+            {label && (
+                <p className="mb-1 text-xs font-medium text-slate-400">
+                    {label}
+                </p>
+            )}
+            {payload.map((entry, index) => (
+                <p key={index} className="text-sm font-semibold text-white">
+                    <span
+                        className="mr-2 inline-block h-2 w-2 rounded-full"
+                        style={{ backgroundColor: entry.color || entry.fill }}
+                    />
+                    {entry.value} {entry.value === 1 ? "task" : "tasks"}
+                </p>
+            ))}
+        </div>
+    );
+}
+
+function PieLabel({ cx, cy, midAngle, innerRadius, outerRadius, percent }) {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+        <text
+            x={x}
+            y={y}
+            fill="white"
+            textAnchor="middle"
+            dominantBaseline="central"
+            className="text-[11px] font-semibold"
+        >
+            {`${(percent * 100).toFixed(0)}%`}
+        </text>
+    );
+}
+
 export default function DashboardCharts({
     statusData = [],
     priorityData = [],
@@ -73,28 +132,26 @@ export default function DashboardCharts({
     const deadlineSeries = buildDeadlineSeries(dueSoonTasks);
 
     return (
-        <div className="grid gap-4 xl:grid-cols-2">
-            <Card
-                className="panel animate-fade-up rounded-2xl p-5"
-                style={{ animationDelay: "40ms" }}
-            >
-                <div className="mb-4 flex items-center justify-between text-slate-900 dark:text-slate-500  ">
-                    <CardTitle>Tasks by status</CardTitle>
-                    <span className="text-xs font-medium uppercase tracking-wide text-slate-900 dark:text-slate-500">
-                        board distribution
+        <div className="grid gap-6 xl:grid-cols-2">
+            {/* Tasks by Status — Donut Chart */}
+            <Card className="overflow-hidden rounded-3xl border border-slate-200/50 bg-white/60 p-0 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/60">
+                <div className="flex items-center justify-between border-b border-slate-200/50 px-6 py-5 dark:border-slate-800/50">
+                    <div>
+                        <CardTitle className="text-base">
+                            Tasks by status
+                        </CardTitle>
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            Board distribution
+                        </p>
+                    </div>
+                    <span className="rounded-full bg-indigo-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300">
+                        Live
                     </span>
                 </div>
-                <div
-                    className="h-72 rounded-2xl bg-white/80 p-2 dark:bg-slate-950/60"
-                    style={{ minWidth: 0, minHeight: 0 }}
-                >
+                <div className="px-6 pb-6 pt-4">
                     <div
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            minWidth: 0,
-                            minHeight: 0,
-                        }}
+                        className="h-64"
+                        style={{ minWidth: 0, minHeight: 0 }}
                     >
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
@@ -102,157 +159,242 @@ export default function DashboardCharts({
                                     data={normalizedStatus}
                                     dataKey="count"
                                     nameKey="label"
-                                    innerRadius={55}
-                                    outerRadius={95}
-                                    paddingAngle={3}
-                                    animationDuration={850}
+                                    innerRadius={60}
+                                    outerRadius={100}
+                                    paddingAngle={4}
+                                    animationDuration={900}
+                                    animationBegin={100}
+                                    label={PieLabel}
+                                    labelLine={false}
                                 >
                                     {normalizedStatus.map((entry, index) => (
                                         <Cell
                                             key={entry.label}
-                                            fill={COLORS[index % COLORS.length]}
+                                            fill={
+                                                STATUS_COLORS[entry.label] ||
+                                                PIE_COLORS[
+                                                    index % PIE_COLORS.length
+                                                ]
+                                            }
+                                            stroke="transparent"
                                         />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    formatter={(value, name) => [
-                                        `${value} tasks`,
-                                        String(name),
-                                    ]}
-                                    contentStyle={{
-                                        background: "rgba(15, 23, 42, 0.95)",
-                                        border: "none",
-                                        borderRadius: "14px",
-                                        color: "white",
-                                    }}
-                                />
+                                <Tooltip content={<CustomTooltip />} />
                             </PieChart>
                         </ResponsiveContainer>
+                    </div>
+                    {/* Custom legend */}
+                    <div className="mt-4 flex flex-wrap items-center justify-center gap-4">
+                        {normalizedStatus.map((entry, index) => (
+                            <div
+                                key={entry.label}
+                                className="flex items-center gap-2"
+                            >
+                                <div
+                                    className="h-3 w-3 rounded-full"
+                                    style={{
+                                        backgroundColor:
+                                            STATUS_COLORS[entry.label] ||
+                                            PIE_COLORS[
+                                                index % PIE_COLORS.length
+                                            ],
+                                    }}
+                                />
+                                <span className="text-xs font-medium capitalize text-slate-600 dark:text-slate-400">
+                                    {entry.label}
+                                </span>
+                                <span className="text-xs font-bold text-slate-900 dark:text-slate-200">
+                                    {entry.count}
+                                </span>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </Card>
 
-            <Card
-                className="panel animate-fade-up rounded-2xl p-5"
-                style={{ animationDelay: "120ms" }}
-            >
-                <div className="mb-4 flex items-center justify-between">
-                    <CardTitle>Tasks by priority</CardTitle>
-                    <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                        urgency mix
+            {/* Tasks by Priority — Bar Chart */}
+            <Card className="overflow-hidden rounded-3xl border border-slate-200/50 bg-white/60 p-0 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/60">
+                <div className="flex items-center justify-between border-b border-slate-200/50 px-6 py-5 dark:border-slate-800/50">
+                    <div>
+                        <CardTitle className="text-base">
+                            Tasks by priority
+                        </CardTitle>
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            Urgency breakdown
+                        </p>
+                    </div>
+                    <span className="rounded-full bg-amber-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:bg-amber-500/15 dark:text-amber-300">
+                        Priority
                     </span>
                 </div>
-                <div
-                    className="h-72 rounded-2xl bg-white/80 p-2 dark:bg-slate-950/60"
-                    style={{ minWidth: 0, minHeight: 0 }}
-                >
+                <div className="px-6 pb-6 pt-4">
                     <div
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            minWidth: 0,
-                            minHeight: 0,
-                        }}
+                        className="h-64"
+                        style={{ minWidth: 0, minHeight: 0 }}
                     >
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={normalizedPriority}>
+                            <BarChart
+                                data={normalizedPriority}
+                                barCategoryGap="25%"
+                            >
                                 <CartesianGrid
                                     strokeDasharray="3 3"
-                                    stroke="#e2e8f0"
+                                    stroke="rgba(148, 163, 184, 0.15)"
+                                    vertical={false}
                                 />
                                 <XAxis
                                     dataKey="label"
-                                    tick={{ fill: "#64748b" }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{
+                                        fill: "#94a3b8",
+                                        fontSize: 12,
+                                        fontWeight: 500,
+                                    }}
                                 />
-                                <YAxis tick={{ fill: "#64748b" }} />
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: "#94a3b8", fontSize: 12 }}
+                                    allowDecimals={false}
+                                />
                                 <Tooltip
-                                    formatter={(value, name) => [
-                                        `${value} tasks`,
-                                        String(name),
-                                    ]}
-                                    contentStyle={{
-                                        background: "rgba(15, 23, 42, 0.95)",
-                                        border: "none",
-                                        borderRadius: "14px",
-                                        color: "white",
+                                    content={<CustomTooltip />}
+                                    cursor={{
+                                        fill: "rgba(99, 102, 241, 0.06)",
                                     }}
                                 />
                                 <Bar
                                     dataKey="count"
-                                    fill="#1d4ed8"
-                                    radius={[6, 6, 0, 0]}
-                                    animationDuration={850}
-                                />
+                                    radius={[10, 10, 4, 4]}
+                                    animationDuration={900}
+                                    animationBegin={200}
+                                >
+                                    {normalizedPriority.map((entry) => (
+                                        <Cell
+                                            key={entry.label}
+                                            fill={
+                                                PRIORITY_COLORS[entry.label] ||
+                                                "#6366f1"
+                                            }
+                                        />
+                                    ))}
+                                </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </Card>
 
-            <Card
-                className="panel animate-fade-up rounded-2xl p-5 xl:col-span-2"
-                style={{ animationDelay: "200ms" }}
-            >
-                <div className="mb-4 flex items-center justify-between">
-                    <CardTitle>Deadlines by date</CardTitle>
-                    <span className="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">
-                        next 7 days
+            {/* Deadlines by Date — Area Chart (full width) */}
+            <Card className="overflow-hidden rounded-3xl border border-slate-200/50 bg-white/60 p-0 shadow-sm backdrop-blur-md xl:col-span-2 dark:border-slate-800/50 dark:bg-slate-900/60">
+                <div className="flex items-center justify-between border-b border-slate-200/50 px-6 py-5 dark:border-slate-800/50">
+                    <div>
+                        <CardTitle className="text-base">
+                            Deadlines by date
+                        </CardTitle>
+                        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                            Tasks due within the next 7 days
+                        </p>
+                    </div>
+                    <span className="rounded-full bg-teal-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-teal-600 dark:bg-teal-500/15 dark:text-teal-300">
+                        Upcoming
                     </span>
                 </div>
-                <div
-                    className="h-80 rounded-2xl bg-white/80 p-2 dark:bg-slate-950/60"
-                    style={{ minWidth: 0, minHeight: 0 }}
-                >
+                <div className="px-6 pb-6 pt-4">
                     <div
-                        style={{
-                            width: "100%",
-                            height: "100%",
-                            minWidth: 0,
-                            minHeight: 0,
-                        }}
+                        className="h-72"
+                        style={{ minWidth: 0, minHeight: 0 }}
                     >
                         {deadlineSeries.length ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={deadlineSeries}>
+                                <AreaChart data={deadlineSeries}>
+                                    <defs>
+                                        <linearGradient
+                                            id="deadlineGradient"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="0%"
+                                                stopColor="#14b8a6"
+                                                stopOpacity={0.3}
+                                            />
+                                            <stop
+                                                offset="100%"
+                                                stopColor="#14b8a6"
+                                                stopOpacity={0.02}
+                                            />
+                                        </linearGradient>
+                                    </defs>
                                     <CartesianGrid
                                         strokeDasharray="3 3"
-                                        stroke="#e2e8f0"
+                                        stroke="rgba(148, 163, 184, 0.15)"
+                                        vertical={false}
                                     />
                                     <XAxis
                                         dataKey="label"
-                                        tick={{ fill: "#64748b" }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fill: "#94a3b8",
+                                            fontSize: 12,
+                                            fontWeight: 500,
+                                        }}
                                     />
-                                    <YAxis tick={{ fill: "#64748b" }} />
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{
+                                            fill: "#94a3b8",
+                                            fontSize: 12,
+                                        }}
+                                        allowDecimals={false}
+                                    />
                                     <Tooltip
+                                        content={<CustomTooltip />}
                                         labelFormatter={(label, payload) => {
                                             return (
                                                 payload?.[0]?.payload
                                                     ?.fullLabel || label
                                             );
                                         }}
-                                        formatter={(value) => [
-                                            `${value} task${value === 1 ? "" : "s"}`,
-                                            "Due items",
-                                        ]}
-                                        contentStyle={{
-                                            background:
-                                                "rgba(15, 23, 42, 0.95)",
-                                            border: "none",
-                                            borderRadius: "14px",
-                                            color: "white",
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="count"
+                                        stroke="#14b8a6"
+                                        strokeWidth={2.5}
+                                        fill="url(#deadlineGradient)"
+                                        animationDuration={1000}
+                                        animationBegin={300}
+                                        dot={{
+                                            r: 5,
+                                            fill: "#14b8a6",
+                                            stroke: "#fff",
+                                            strokeWidth: 2,
+                                        }}
+                                        activeDot={{
+                                            r: 7,
+                                            fill: "#14b8a6",
+                                            stroke: "#fff",
+                                            strokeWidth: 3,
                                         }}
                                     />
-                                    <Bar
-                                        dataKey="count"
-                                        fill="#14b8a6"
-                                        radius={[6, 6, 0, 0]}
-                                        animationDuration={900}
-                                    />
-                                </BarChart>
+                                </AreaChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-                                No upcoming deadlines to chart.
+                            <div className="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200/60 dark:border-slate-700/60">
+                                <p className="text-3xl">🎉</p>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                    No upcoming deadlines to chart.
+                                </p>
+                                <p className="text-xs text-slate-400 dark:text-slate-500">
+                                    All clear for the next 7 days!
+                                </p>
                             </div>
                         )}
                     </div>

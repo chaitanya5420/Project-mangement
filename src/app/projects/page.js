@@ -18,7 +18,7 @@ export default function ProjectsPage() {
         <AuthGuard>
             <AppShell>
                 <div className="space-y-6">
-                    <Card className="panel rounded-3xl p-6 md:p-8">
+                    <Card className="rounded-3xl border border-slate-200/50 bg-white/60 p-6 shadow-sm backdrop-blur-md md:p-8 dark:border-slate-800/50 dark:bg-slate-900/60">
                         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                             <div>
                                 <span className="inline-flex rounded-full bg-sky-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
@@ -34,7 +34,7 @@ export default function ProjectsPage() {
                             </div>
 
                             <div className="grid grid-cols-3 gap-3">
-                                <div className="rounded-2xl bg-slate-50 p-4 text-slate-900 dark:bg-slate-950 dark:text-white">
+                                <div className="rounded-2xl border border-slate-200/50 bg-white/80 p-5 text-slate-900 shadow-sm dark:border-slate-700/50 dark:bg-slate-800/80 dark:text-white">
                                     <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">
                                         Active
                                     </p>
@@ -42,7 +42,7 @@ export default function ProjectsPage() {
                                         {data?.projects?.length || 0}
                                     </p>
                                 </div>
-                                <div className="rounded-2xl bg-indigo-500 p-4 text-white">
+                                <div className="rounded-2xl bg-indigo-600/90 p-5 text-white shadow-sm backdrop-blur-sm dark:bg-indigo-500/90">
                                     <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">
                                         Members
                                     </p>
@@ -54,7 +54,7 @@ export default function ProjectsPage() {
                                         ) || 0}
                                     </p>
                                 </div>
-                                <div className="rounded-2xl bg-emerald-500 p-4 text-white">
+                                <div className="rounded-2xl bg-emerald-500/90 p-5 text-white shadow-sm backdrop-blur-sm dark:bg-emerald-600/90">
                                     <p className="text-[10px] uppercase tracking-[0.2em] text-white/60">
                                         Ready
                                     </p>

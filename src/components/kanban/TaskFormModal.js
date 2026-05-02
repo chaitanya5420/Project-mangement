@@ -26,13 +26,14 @@ const normalizeChecklistItems = (items) =>
         }))
         .filter((item) => item.text);
 
-export default function TaskFormModal({ open, onClose, projectId, members }) {
+export default function TaskFormModal({ open, onClose, projectId, members, canAssign = false }) {
     const queryClient = useQueryClient();
     const [form, setForm] = useState({
         title: "",
         description: "",
         status: "todo",
         priority: "medium",
+        startDate: "",
         dueDate: "",
         assignedTo: "",
         checklistItems: [createChecklistItem()],
@@ -44,6 +45,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
             description: "",
             status: "todo",
             priority: "medium",
+            startDate: "",
             dueDate: "",
             assignedTo: "",
             checklistItems: [createChecklistItem()],
@@ -70,6 +72,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
             status: form.status,
             priority: form.priority,
             assignedTo: form.assignedTo || null,
+            startDate: form.startDate || null,
             dueDate: form.dueDate || null,
             checklist: checklist,
             checkbox:
@@ -144,6 +147,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                 <Input
                     placeholder="Title"
                     value={form.title}
+                    className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -155,6 +159,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                 <Textarea
                     placeholder="Description"
                     value={form.description}
+                    className="min-h-24 rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -162,7 +167,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                         }))
                     }
                 />
-                <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <div className="space-y-3 rounded-2xl border border-slate-200/60 bg-slate-50/50 p-4 shadow-sm backdrop-blur-sm dark:border-slate-800/60 dark:bg-slate-900/30">
                     <div className="flex items-center justify-between gap-2">
                         <div>
                             <p className="text-sm font-semibold text-slate-900">
@@ -187,7 +192,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                         {form.checklistItems.map((item, index) => (
                             <div
                                 key={item.id}
-                                className="flex items-start gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2"
+                                className="flex items-start gap-3 rounded-xl border border-slate-200/60 bg-white/80 px-3 py-2 shadow-sm dark:border-slate-700/60 dark:bg-slate-800/80"
                             >
                                 <input
                                     type="checkbox"
@@ -207,7 +212,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                                             text: event.target.value,
                                         })
                                     }
-                                    className="flex-1"
+                                    className="flex-1 rounded-lg border-slate-200/60 bg-transparent text-sm focus:border-indigo-500 focus:ring-0 dark:border-slate-700/60"
                                 />
                                 <Button
                                     type="button"
@@ -231,6 +236,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                                 status: event.target.value,
                             }))
                         }
+                        className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     >
                         {TASK_STATUS.map((status) => (
                             <option key={status.value} value={status.value}>
@@ -246,6 +252,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                                 priority: event.target.value,
                             }))
                         }
+                        className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     >
                         {TASK_PRIORITY.map((priority) => (
                             <option key={priority.value} value={priority.value}>
@@ -254,33 +261,59 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                         ))}
                     </Select>
                 </div>
-                <Input
-                    type="date"
-                    value={form.dueDate}
-                    onChange={(event) =>
-                        setForm((prev) => ({
-                            ...prev,
-                            dueDate: event.target.value,
-                        }))
-                    }
-                />
-                <Select
-                    value={form.assignedTo}
-                    onChange={(event) =>
-                        setForm((prev) => ({
-                            ...prev,
-                            assignedTo: event.target.value,
-                        }))
-                    }
-                >
-                    <option value="">Unassigned</option>
-                    {members.map((member) => (
-                        <option key={member.user._id} value={member.user._id}>
-                            {member.user.name}
-                        </option>
-                    ))}
-                </Select>
-                <div className="flex flex-end gap-2">
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Start Date</label>
+                        <Input
+                            type="date"
+                            value={form.startDate}
+                            className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
+                            onChange={(event) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    startDate: event.target.value,
+                                }))
+                            }
+                        />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Due Date</label>
+                        <Input
+                            type="date"
+                            value={form.dueDate}
+                            className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
+                            onChange={(event) =>
+                                setForm((prev) => ({
+                                    ...prev,
+                                    dueDate: event.target.value,
+                                }))
+                            }
+                        />
+                    </div>
+                </div>
+                {canAssign && (
+                <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">Assign To</label>
+                    <Select
+                        value={form.assignedTo}
+                        onChange={(event) =>
+                            setForm((prev) => ({
+                                ...prev,
+                                assignedTo: event.target.value,
+                            }))
+                        }
+                        className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
+                    >
+                        <option value="">Unassigned</option>
+                        {members.map((member) => (
+                            <option key={member.user._id} value={member.user._id}>
+                                {member.user.name}
+                            </option>
+                        ))}
+                    </Select>
+                </div>
+                )}
+                <div className="mt-4 flex justify-end gap-2 pt-2">
                     {/* <Button
                         type="button"
                         className="w-full"
@@ -290,7 +323,7 @@ export default function TaskFormModal({ open, onClose, projectId, members }) {
                         Fill sample
                     </Button> */}
                     <Button
-                        className="w-full"
+                        className="w-full rounded-xl py-5 shadow-md transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-indigo-500/20 active:translate-y-0"
                         type="submit"
                         disabled={mutation.isPending}
                     >

@@ -26,7 +26,7 @@ export default function ProjectCreateCard() {
     };
 
     return (
-        <Card className="panel rounded-3xl p-5 lg:sticky lg:top-24">
+        <Card className="rounded-3xl border border-slate-200/50 bg-white/60 p-6 shadow-sm backdrop-blur-md lg:sticky lg:top-24 dark:border-slate-800/50 dark:bg-slate-900/60">
             <div className="mb-5">
                 <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
                     New workspace
@@ -43,6 +43,7 @@ export default function ProjectCreateCard() {
                 <Input
                     placeholder="Project name"
                     value={form.name}
+                    className="rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -54,6 +55,7 @@ export default function ProjectCreateCard() {
                 <Textarea
                     placeholder="Describe the project goal"
                     value={form.description}
+                    className="min-h-24 rounded-xl border-slate-200/60 bg-white/80 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -62,7 +64,7 @@ export default function ProjectCreateCard() {
                     }
                 />
                 <Button
-                    className="w-full"
+                    className="w-full rounded-xl py-5 shadow-md transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-indigo-500/20 active:translate-y-0"
                     type="submit"
                     disabled={mutation.isPending}
                 >

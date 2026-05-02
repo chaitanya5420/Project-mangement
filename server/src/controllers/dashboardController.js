@@ -9,13 +9,13 @@ const getDashboardData = asyncHandler(async (req, res) => {
     }).select("_id name");
     const projectIds = userProjects.map((project) => project._id);
 
-    const [statusStats, priorityStats, dueSoonTasks] = await Promise.all([
+    const [statusStats, priorityStats, dueSoonTasks, archivedTasks] = await Promise.all([
         Task.aggregate([
-            { $match: { project: { $in: projectIds } } },
+            { $match: { project: { $in: projectIds }, status: { $ne: "archived" } } },
             { $group: { _id: "$status", count: { $sum: 1 } } },
         ]),
         Task.aggregate([
-            { $match: { project: { $in: projectIds } } },
+            { $match: { project: { $in: projectIds }, status: { $ne: "archived" } } },
             { $group: { _id: "$priority", count: { $sum: 1 } } },
         ]),
         Task.find({
@@ -30,6 +30,14 @@ const getDashboardData = asyncHandler(async (req, res) => {
             .populate("assignedTo", "name email")
             .sort({ dueDate: 1 })
             .limit(10),
+        Task.find({
+            project: { $in: projectIds },
+            status: "archived",
+        })
+            .populate("project", "name")
+            .populate("assignedTo", "name email")
+            .sort({ updatedAt: -1 })
+            .limit(50),
     ]);
 
     res.status(200).json({
@@ -43,6 +51,7 @@ const getDashboardData = asyncHandler(async (req, res) => {
             count: entry.count,
         })),
         dueSoonTasks,
+        archivedTasks,
     });
 });
 

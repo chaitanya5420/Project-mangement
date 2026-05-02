@@ -18,6 +18,8 @@ export const metadata = {
     description: "Collaborative task manager",
 };
 
+import { Toaster } from "react-hot-toast";
+
 export default function RootLayout({ children }) {
     return (
         <html
@@ -28,6 +30,7 @@ export default function RootLayout({ children }) {
             <body className="min-h-full flex flex-col">
                 <ThemeProvider>
                     <AppProviders>{children}</AppProviders>
+                    <Toaster position="top-right" />
                 </ThemeProvider>
             </body>
         </html>

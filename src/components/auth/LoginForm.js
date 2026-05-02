@@ -28,16 +28,19 @@ export default function LoginForm() {
     };
 
     return (
-        <Card className="mx-auto mt-20 w-full max-w-md">
-            <CardTitle>Sign in</CardTitle>
-            <CardDescription className="mb-6">
-                Access your projects and tasks
-            </CardDescription>
+        <Card className="mx-auto mt-20 w-full max-w-md rounded-3xl border border-slate-200/50 bg-white/60 p-8 shadow-2xl backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/60">
+            <div className="mb-8 text-center">
+                <CardTitle className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Welcome back</CardTitle>
+                <CardDescription className="mt-2 text-slate-500 dark:text-slate-400">
+                    Access your projects and tasks
+                </CardDescription>
+            </div>
             <form className="space-y-4" onSubmit={onSubmit}>
                 <Input
                     type="email"
                     placeholder="Email"
                     value={form.email}
+                    className="rounded-xl border-slate-200/60 bg-white/80 px-4 py-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -50,6 +53,7 @@ export default function LoginForm() {
                     type="password"
                     placeholder="Password"
                     value={form.password}
+                    className="rounded-xl border-slate-200/60 bg-white/80 px-4 py-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500/20 dark:border-slate-700/60 dark:bg-slate-900/80"
                     onChange={(event) =>
                         setForm((prev) => ({
                             ...prev,
@@ -59,7 +63,7 @@ export default function LoginForm() {
                     required
                 />
                 <Button
-                    className="w-full"
+                    className="w-full rounded-xl py-6 text-base font-semibold shadow-md transition-all hover:-translate-y-px hover:shadow-lg hover:shadow-indigo-500/20 active:translate-y-0"
                     type="submit"
                     disabled={mutation.isPending}
                 >

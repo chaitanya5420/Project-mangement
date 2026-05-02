@@ -13,6 +13,7 @@ import { projectService } from "@/services/projectService";
 import { taskService } from "@/services/taskService";
 import { useSocket } from "@/hooks/useSocket";
 import { useAuthStore } from "@/store/authStore";
+import { toast } from "react-hot-toast";
 
 export default function ProjectPage() {
     const params = useParams();
@@ -39,9 +40,24 @@ export default function ProjectPage() {
             return undefined;
         }
 
-        const onTaskChange = () => {
+        const onTaskChange = (payload) => {
             queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
             queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+
+            if (payload?.task && payload.task.status === "done") {
+                const userId = String(user?._id || user?.id);
+                const isCurrentUserAdmin = projectData?.project?.members?.some(
+                    (member) => String(member.user?._id || member.user) === userId && member.role === "admin"
+                ) || String(projectData?.project?.owner?._id || projectData?.project?.owner) === userId;
+                
+                // If the user receiving the event is an admin, notify them.
+                if (isCurrentUserAdmin) {
+                     toast.success(`Task completed: ${payload.task.title}`, {
+                         duration: 4000,
+                         icon: '🎉',
+                     });
+                }
+            }
         };
 
         socket.on("task:created", onTaskChange);
@@ -65,23 +81,66 @@ export default function ProjectPage() {
             String(member.user?._id || member.user) === String(user?._id || user?.id),
     )?.role;
     const canDeleteTasks = currentMemberRole === "admin";
+    const isAdminOrOwner = currentMemberRole === "admin" ||
+        String(project?.owner?._id || project?.owner) === String(user?._id || user?.id);
 
     const canDeleteTask = (task) => {
-        // If no user or no project data, can't delete
+        if (!user || !project) return false;
+
+        const userId = String(user._id || user.id);
+        const isAdmin = project.members?.some(
+            (member) => String(member.user?._id || member.user) === userId && member.role === "admin"
+        );
+        const isOwner = String(project.owner?._id || project.owner) === userId;
+
+        const completedChecklistCount = Array.isArray(task.checklist) ? task.checklist.filter(i => i.completed).length : 0;
+        const totalChecklist = Array.isArray(task.checklist) ? task.checklist.length : 0;
+        
+        let isTaskComplete = false;
+        if (totalChecklist > 0) {
+             isTaskComplete = (completedChecklistCount === totalChecklist) && task.status === "done";
+        } else {
+             isTaskComplete = task.status === "done" && Boolean(task.checkbox);
+        }
+
+        if (isTaskComplete) {
+            return isAdmin || isOwner;
+        }
+
+        return false;
+    };
+
+    const canEditChecklist = (task) => {
         if (!user || !project) return false;
 
         const userId = String(user._id || user.id);
 
-        // Check if user is admin in project members
         const isAdmin = project.members?.some(
             (member) => String(member.user?._id || member.user) === userId && member.role === "admin"
         );
         if (isAdmin) return true;
 
-        // Project owner can delete any task
         if (String(project.owner?._id || project.owner) === userId) return true;
 
-        // Task creator can delete their own tasks
+        if (String(task.createdBy?._id || task.createdBy) === userId) return true;
+
+        if (String(task.assignedTo?._id || task.assignedTo) === userId) return true;
+
+        return false;
+    };
+
+    const canAssignTask = (task) => {
+        if (!user || !project) return false;
+
+        const userId = String(user._id || user.id);
+
+        const isAdmin = project.members?.some(
+            (member) => String(member.user?._id || member.user) === userId && member.role === "admin"
+        );
+        if (isAdmin) return true;
+
+        if (String(project.owner?._id || project.owner) === userId) return true;
+
         if (String(task.createdBy?._id || task.createdBy) === userId) return true;
 
         return false;
@@ -94,7 +153,7 @@ export default function ProjectPage() {
                     <p className="text-sm text-slate-600">Loading project...</p>
                 ) : (
                     <div className="space-y-6">
-                        <div className="panel flex flex-wrap items-center justify-between gap-3 rounded-2xl p-5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl border border-slate-200/50 bg-white/60 p-6 shadow-sm backdrop-blur-md dark:border-slate-800/50 dark:bg-slate-900/60">
                             <div>
                                 <h2 className="text-2xl font-semibold tracking-tight">
                                     {project.name}
@@ -112,17 +171,13 @@ export default function ProjectPage() {
                         <ProjectMembers project={project} />
 
                         <KanbanBoard
-                            key={
-                                tasksData?.tasks
-                                    ?.map(
-                                        (task) =>
-                                            `${task._id}:${task.status}:${task.updatedAt}`,
-                                    )
-                                    .join("|") || projectId
-                            }
+                            key={projectId}
                             tasks={tasksData?.tasks || []}
                             projectId={projectId}
+                            members={project.members || []}
                             canDeleteTask={canDeleteTask}
+                            canEditChecklist={canEditChecklist}
+                            canAssignTask={canAssignTask}
                         />
 
                         <TaskFormModal
@@ -130,6 +185,7 @@ export default function ProjectPage() {
                             onClose={() => setShowTaskModal(false)}
                             projectId={projectId}
                             members={project.members}
+                            canAssign={isAdminOrOwner}
                         />
                     </div>
                 )}

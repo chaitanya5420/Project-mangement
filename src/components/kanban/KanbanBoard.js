@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     DndContext,
@@ -25,10 +25,15 @@ import TaskCard from "@/components/kanban/TaskCard";
 
 function SortableTask({
     task,
+    members,
     canDeleteTask,
+    canEditChecklist,
+    canAssignTask,
     onDelete,
     onToggleCheckbox,
     onUpdateChecklist,
+    onUpdateTask,
+    onArchive,
 }) {
     const {
         attributes,
@@ -49,13 +54,18 @@ function SortableTask({
         >
             <TaskCard
                 task={task}
+                members={members}
                 listeners={listeners}
                 attributes={attributes}
                 isDragging={isDragging}
                 canDelete={canDeleteTask(task)}
+                canEditChecklist={canEditChecklist(task)}
+                canAssignTask={canAssignTask(task)}
                 onDelete={onDelete}
                 onToggleChecklistItem={onToggleCheckbox}
                 onUpdateChecklist={onUpdateChecklist}
+                onUpdateTask={onUpdateTask}
+                onArchive={onArchive}
             />
         </div>
     );
@@ -65,20 +75,25 @@ function KanbanColumn({
     id,
     label,
     tasks,
+    members,
     canDeleteTask,
+    canEditChecklist,
+    canAssignTask,
     onDelete,
     onToggleCheckbox,
     onUpdateChecklist,
+    onUpdateTask,
+    onArchive,
 }) {
     const { setNodeRef } = useDroppable({ id });
 
     return (
-        <div ref={setNodeRef} className="panel min-h-105 rounded-2xl p-3">
-            <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-600">
+        <div ref={setNodeRef} className="flex min-h-[500px] flex-col rounded-3xl border border-slate-200/50 bg-slate-100/50 p-3 shadow-inner backdrop-blur-sm transition-colors duration-300 dark:border-slate-800/50 dark:bg-slate-800/30">
+            <div className="mb-4 flex items-center justify-between px-2">
+                <h3 className="text-sm font-bold tracking-tight text-slate-800 dark:text-slate-100">
                     {label}
                 </h3>
-                <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500">
+                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-white px-2 text-[11px] font-semibold text-slate-600 shadow-sm dark:bg-slate-700 dark:text-slate-300">
                     {tasks.length}
                 </span>
             </div>
@@ -91,10 +106,15 @@ function KanbanColumn({
                         <SortableTask
                             key={task._id}
                             task={task}
+                            members={members}
                             canDeleteTask={canDeleteTask}
+                            canEditChecklist={canEditChecklist}
+                            canAssignTask={canAssignTask}
                             onDelete={onDelete}
                             onToggleCheckbox={onToggleCheckbox}
                             onUpdateChecklist={onUpdateChecklist}
+                            onUpdateTask={onUpdateTask}
+                            onArchive={onArchive}
                         />
                     ))}
                 </div>
@@ -104,8 +124,11 @@ function KanbanColumn({
 }
 
 function buildTaskMap(items) {
+    // Filter out archived tasks so they never appear on the board
+    const activeTasks = items.filter((task) => task.status !== "archived");
+
     return TASK_STATUS.reduce((accumulator, column) => {
-        accumulator[column.value] = items
+        accumulator[column.value] = activeTasks
             .filter((task) => task.status === column.value)
             .slice()
             .sort((first, second) => {
@@ -124,7 +147,10 @@ function buildTaskMap(items) {
 export default function KanbanBoard({
     tasks,
     projectId,
+    members = [],
     canDeleteTask = () => false,
+    canEditChecklist = () => false,
+    canAssignTask = () => false,
 }) {
     const queryClient = useQueryClient();
     const sensors = useSensors(
@@ -139,6 +165,11 @@ export default function KanbanBoard({
     );
 
     const [taskGroups, setTaskGroups] = useState(() => buildTaskMap(tasks));
+    
+    useEffect(() => {
+        setTaskGroups(buildTaskMap(tasks));
+    }, [tasks]);
+
     const [activeTaskId, setActiveTaskId] = useState(null);
     const dragOriginRef = useRef(null);
 
@@ -246,13 +277,17 @@ export default function KanbanBoard({
         dragOriginRef.current = null;
     };
 
+    const handleUpdateTask = (taskId, updates) => {
+        mutation.mutate({ taskId, updates });
+    };
+
     const handleDelete = (task) => {
         if (!canDeleteTask(task)) {
             return;
         }
 
         const confirmed = window.confirm(
-            `Delete task "${task.title}"?`,
+            `Permanently delete task "${task.title}" from the database? This cannot be undone.`,
         );
 
         if (!confirmed) {
@@ -262,11 +297,32 @@ export default function KanbanBoard({
         deleteMutation.mutate(task._id);
     };
 
+    const handleArchive = (task) => {
+        if (!canDeleteTask(task)) {
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Archive task "${task.title}"? It will be removed from the board but kept in the database.`,
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        mutation.mutate({
+            taskId: task._id,
+            updates: { status: "archived" },
+        });
+    };
+
     const handleToggleCheckbox = (task) => {
+        const nextCheckbox = !Boolean(task.checkbox);
         mutation.mutate({
             taskId: task._id,
             updates: {
-                checkbox: !Boolean(task.checkbox),
+                checkbox: nextCheckbox,
+                status: nextCheckbox ? "done" : "todo",
             },
         });
     };
@@ -301,10 +357,23 @@ export default function KanbanBoard({
                 : item,
         );
 
+        const completedCount = nextChecklist.filter((item) => item.completed).length;
+        let nextStatus = task.status;
+        if (nextChecklist.length > 0) {
+            if (completedCount === 0) {
+                nextStatus = "todo";
+            } else if (completedCount === nextChecklist.length) {
+                nextStatus = "done";
+            } else {
+                nextStatus = "in_progress";
+            }
+        }
+
         mutation.mutate({
             taskId: task._id,
             updates: {
                 checklist: nextChecklist,
+                status: nextStatus,
                 checkbox:
                     nextChecklist.length > 0 &&
                     nextChecklist.every((item) => item.completed),
@@ -314,10 +383,23 @@ export default function KanbanBoard({
     };
 
     const handleUpdateChecklist = (task, nextChecklist) => {
+        const completedCount = nextChecklist.filter((item) => item.completed).length;
+        let nextStatus = task.status;
+        if (nextChecklist.length > 0) {
+            if (completedCount === 0) {
+                nextStatus = "todo";
+            } else if (completedCount === nextChecklist.length) {
+                nextStatus = "done";
+            } else {
+                nextStatus = "in_progress";
+            }
+        }
+
         mutation.mutate({
             taskId: task._id,
             updates: {
                 checklist: nextChecklist,
+                status: nextStatus,
                 checkbox:
                     nextChecklist.length > 0 &&
                     nextChecklist.every((item) => item.completed),
@@ -342,10 +424,15 @@ export default function KanbanBoard({
                         id={column.value}
                         label={column.label}
                         tasks={taskGroups[column.value] || []}
+                        members={members}
                         canDeleteTask={canDeleteTask}
+                        canEditChecklist={canEditChecklist}
+                        canAssignTask={canAssignTask}
                         onDelete={handleDelete}
                         onToggleCheckbox={handleToggleChecklistItem}
                         onUpdateChecklist={handleUpdateChecklist}
+                        onUpdateTask={handleUpdateTask}
+                        onArchive={handleArchive}
                     />
                 ))}
             </div>

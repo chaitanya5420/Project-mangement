@@ -15,6 +15,11 @@ const checklistItemSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        assignedTo: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
     },
     { _id: false },
 );
@@ -39,7 +44,7 @@ const taskSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["todo", "in_progress", "done"],
+            enum: ["todo", "in_progress", "done", "archived"],
             default: "todo",
             index: true,
         },
@@ -47,6 +52,10 @@ const taskSchema = new mongoose.Schema(
             type: String,
             enum: ["low", "medium", "high"],
             default: "medium",
+        },
+        startDate: {
+            type: Date,
+            default: null,
         },
         dueDate: {
             type: Date,

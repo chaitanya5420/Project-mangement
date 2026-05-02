@@ -22,6 +22,7 @@ const sanitizeChecklist = (checklist) => {
             id: String(item?.id || item?._id || createChecklistItemId(index)),
             text: String(item?.text || "").trim(),
             completed: Boolean(item?.completed),
+            assignedTo: item?.assignedTo || null,
         }))
         .filter((item) => item.text);
 };
@@ -59,6 +60,7 @@ const createTask = asyncHandler(async (req, res) => {
         description,
         status,
         priority,
+        startDate,
         dueDate,
         assignedTo,
         checkbox,
@@ -78,6 +80,7 @@ const createTask = asyncHandler(async (req, res) => {
         description,
         status,
         priority,
+        startDate: startDate || null,
         dueDate: dueDate || null,
         assignedTo: assignedTo || null,
         checkbox:
@@ -115,6 +118,7 @@ const updateTask = asyncHandler(async (req, res) => {
         "description",
         "status",
         "priority",
+        "startDate",
         "dueDate",
         "assignedTo",
         "checkbox",
